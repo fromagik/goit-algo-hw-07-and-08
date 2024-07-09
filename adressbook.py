@@ -18,14 +18,14 @@ class Name(Field): # Клас що використовується для сб�
 class Phone(Field): # Клас що використовується для сберігання та обробки номеру контакта
     def __init__(self, phone_number:str):
         if not phone_number.isdigit() or len(phone_number) != 10: # Перевірка на правельний запис номеру, викликає виняток 
-            raise ValueError("Номер телефону має складатися з 10 цифр і містити лише цифри.")
+            raise ValueError("Номер телефону має складатися з 10 цифр\nі містити лише цифри.")
         super().__init__(phone_number)
 
 
-class Birthday(Field):
+class Birthday(Field): # Клас для збереження дня народження
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, "%Y.%m.%d").date()
+            self.value = datetime.strptime(value, "%d.%m.%Y").date() # перетворюємо строку в тип дата тайм
             super().__init__(self.value)
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
@@ -59,8 +59,8 @@ class Record: # Клас що використовується для робот
         for numer in self.phones:
             if numer.value == phone: # Якщо значення відповідає вказаному номеру то повертається номер
                 return phone 
-            # else: # Або викликається вийняток який вказує що номер не знайжено
-            #     raise ValueError(f'Номер контакту "{phone}" не знайдено.')
+            else: # Або викликається вийняток який вказує що номер не знайжено
+                raise ValueError(f'Номер контакту "{phone}" не знайдено.')
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -79,22 +79,24 @@ class AddressBook(UserDict): # Клас для зберігання всіх к�
     def delete(self, contact:str) -> None: # Метод для видалення контакту з контактонї книги
         if contact.name.value in self.data:
             del self.data[contact.name.value]
+        else:
+            raise ValueError('Contact not found')
     
-    def __date_to_string(self, date):
+    def __date_to_string(self, date): # Приватний метод для перетворення дати в строку
         return date.strftime("%Y.%m.%d")
 
-    def __find_next_weekday(self, start_date, weekday):
+    def __find_next_weekday(self, start_date, weekday): # Приватний метод для пошуку дня(Для прикладу наступного понеділка)
         days_ahead = weekday - start_date.weekday()
         if days_ahead <= 0:
             days_ahead += 7
         return start_date + timedelta(days=days_ahead)
 
-    def __adjust_for_weekend(self, birthday):
+    def __adjust_for_weekend(self, birthday): # Приватний метод для перевірки чи день випадає на суботу-неділю. Якщо так повертає наступний понеділок 
         if birthday.weekday() >= 5:
             return self.__find_next_weekday(birthday, 0)
         return birthday
 
-    def get_upcoming_birthdays(self, users, days=7):
+    def get_upcoming_birthdays(self, days=7): # Метод для повернення списку з словників всіх контактів в кого день народження через тиждень
         upcoming_birthdays = []
         today = date.today()
 
@@ -112,12 +114,13 @@ class AddressBook(UserDict): # Клас для зберігання всіх к�
                 
         return upcoming_birthdays
 
-    def __iter__(self):
+    def __iter__(self): # Метод для можливості ітерації по класу
         return iter(self.data.values())
 
     def __str__(self):
         return "\n".join(str(record) for record in self.data.values())
     
+# ТЕСТ
 if __name__ == "__main__":
 
     book = AddressBook()
