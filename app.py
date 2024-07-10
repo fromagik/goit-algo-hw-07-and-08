@@ -209,6 +209,7 @@ class App:
 
     @input_error
     def add_birtday(self, args):
+        # Функція для добавлення дня народження для контакту
         name, birt = args
         name = name.get() # Отримуємо значення в вигляді строки з поля що ввів користувач
         birt = birt.get()
@@ -220,6 +221,7 @@ class App:
             raise ValueError('Contact not found')
     
     def show_birthday(self, contact):
+        # Вікно для відображення дня народження кожного контакту
         acw = tk.Toplevel(root)
         acw.title('Birthday')
         acw.geometry("150x120")
@@ -235,7 +237,7 @@ class App:
 
         
     def del_contact_window(self):
-
+        # Вікно для видалення контакту
         acw = tk.Toplevel(root)
         acw.title('Delete contact')
         acw.geometry("400x300")
@@ -256,7 +258,7 @@ class App:
         add_btn.place(x=x, y= 80)
 
     def upcoming_birthdays(self):
-
+        # Вікно для відображення всіх днів народжння через 7 днів
         acw = tk.Toplevel(root)
         acw.title('Upcoming birthdays')
         acw.geometry("400x300")
@@ -272,7 +274,7 @@ class App:
         ok_btn = tk.Button(acw, text='OK', command=self.main, width=5, height=2, bd=0, highlightthickness=0)
         ok_btn.pack()
 
-    def del_contact(self, name):
+    def del_contact(self, name): # Функція для видалення контакту
         name = name.get()
         contact = self.book.find(name)
         if contact:
