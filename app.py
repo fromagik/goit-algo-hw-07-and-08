@@ -2,11 +2,12 @@ import tkinter as tk
 from adressbook import AddressBook, Record
 from wrapper import input_error
 from tkinter import messagebox
+import pickle
 
 class App:
     def __init__(self, root): # Ініціалізуємо додаток
         self.root = root
-        self.book = AddressBook()
+        self.book = self.load_book()
         self.window_param()
         self.start()
 
@@ -22,6 +23,17 @@ class App:
         self.root.maxsize(width=450, height=550)
         self.root.configure(bg='white')
 
+    def save_book(self, filename='adressbook.pkl'):
+        with open(filename, "wb") as file:
+            pickle.dump(self.book, file)
+
+    def load_book(self, filename='adressbook.pkl'):
+        try:
+            with open(filename, "rb") as file:
+                return pickle.load(file)
+        except FileNotFoundError:
+            return AddressBook()
+
     def start(self):
     # Стартове вікно
         self.window_param()
@@ -36,15 +48,17 @@ class App:
         # Головне меню
         self.window_param()
 
-        add_contact_btn = tk.Button(self.root, text='Add contact', bg='white', fg='black', bd=0, highlightthickness=0, width=10, height=2, command=self.add_contact_window)
+        add_contact_btn = tk.Button(self.root, text='Add contact', bg='white', fg='black', bd=0, highlightthickness=0, width=12, height=2, command=self.add_contact_window)
         add_contact_btn.grid(row=1, column=0, padx=5, pady=5)
-        change_btn = tk.Button(self.root, text='Change number', bg='white', fg='black', bd=0, highlightthickness=0, width=10, height=2, command=self.change_contact_window)
+        change_btn = tk.Button(self.root, text='Change number', bg='white', fg='black', bd=0, highlightthickness=0, width=12, height=2, command=self.change_contact_window)
         change_btn.grid(row=2, column=0, padx=5, pady=5)
-        birthday_btn = tk.Button(self.root, text='Add birthday', bg='white', fg='black', bd=0, highlightthickness=0, width=10, height=2, command=self.add_birthday_window)
+        birthday_btn = tk.Button(self.root, text='Add birthday', bg='white', fg='black', bd=0, highlightthickness=0, width=12, height=2, command=self.add_birthday_window)
         birthday_btn.grid(row=1, column=2, padx=5, pady=5)
-        delete_btn = tk.Button(self.root, text='Delete contact', bg='white', fg='black', bd=0, highlightthickness=0, width=10, height=2, command=self.del_contact_window)
+        delete_btn = tk.Button(self.root, text='Delete contact', bg='white', fg='black', bd=0, highlightthickness=0, width=12, height=2, command=self.del_contact_window)
         delete_btn.grid(row=2, column=2, padx=5, pady=5)
-        exit_btn = tk.Button(self.root, text='Exit', bg='white', fg='black', bd=0, highlightthickness=0, width=10, height=2, command=self.exit_app)
+        exit_btn = tk.Button(self.root, text='Upcoming birthdays', bg='white', fg='black', bd=0, highlightthickness=0, width=12, height=2, command=self.upcoming_birthdays)
+        exit_btn.grid(row=1, column=3, padx=5, pady=5)
+        exit_btn = tk.Button(self.root, text='Exit', bg='white', fg='black', bd=0, highlightthickness=0, width=12, height=2, command=self.exit_app)
         exit_btn.grid(row=2, column=3, padx=5, pady=5)
 
         # Створюємо Canvas для контактів з прокруткою
@@ -221,6 +235,7 @@ class App:
 
         
     def del_contact_window(self):
+
         acw = tk.Toplevel(root)
         acw.title('Delete contact')
         acw.geometry("400x300")
@@ -239,7 +254,24 @@ class App:
 
         add_btn = tk.Button(acw, text='Delete contact', bg='white', fg='black', bd=0, highlightthickness=0, width=7, height=2, command= lambda: self.del_contact(name_entry))
         add_btn.place(x=x, y= 80)
+
+    def upcoming_birthdays(self):
+
+        acw = tk.Toplevel(root)
+        acw.title('Upcoming birthdays')
+        acw.geometry("400x300")
+        acw.minsize(width=400, height=300)
+        acw.maxsize(width=400, height=300)
+        acw.configure(bg='white')
+
+        upcoming_birthdays = self.book.get_upcoming_birthdays(7)
+        for birthday in upcoming_birthdays:
+            birthdays_lbl = tk.Label(acw, text=f"{birthday['name']}: {birthday['congratulation_date']}", bg='white', fg='black', font=('Arial', 16), bd=0, highlightthickness=0)
+            birthdays_lbl.pack()
         
+        ok_btn = tk.Button(acw, text='OK', command=self.main, width=5, height=2, bd=0, highlightthickness=0)
+        ok_btn.pack()
+
     def del_contact(self, name):
         name = name.get()
         contact = self.book.find(name)
@@ -249,9 +281,9 @@ class App:
 
     def exit_app(self):
         # Функция для выхода из приложения
+        self.save_book()
         messagebox.showinfo("Goodbye", "Goodbye")
         self.root.quit()
-
 
 if __name__ == '__main__':
     root = tk.Tk()

@@ -25,8 +25,8 @@ class Phone(Field): # Клас що використовується для сб
 class Birthday(Field): # Клас для збереження дня народження
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, "%d.%m.%Y").date() # перетворюємо строку в тип дата тайм
-            super().__init__(self.value)
+            self.value = datetime.strptime(value, "%d.%m.%Y").date() 
+            super().__init__(self.value.strftime("%d.%m.%Y"))
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
 
@@ -82,8 +82,11 @@ class AddressBook(UserDict): # Клас для зберігання всіх к�
         else:
             raise ValueError('Contact not found')
     
+    def __string_to_date(self, date_string):
+        return datetime.strptime(date_string, "%d.%m.%Y").date()
+    
     def __date_to_string(self, date): # Приватний метод для перетворення дати в строку
-        return date.strftime("%Y.%m.%d")
+        return date.strftime("%d.%m.%Y")
 
     def __find_next_weekday(self, start_date, weekday): # Приватний метод для пошуку дня(Для прикладу наступного понеділка)
         days_ahead = weekday - start_date.weekday()
@@ -101,16 +104,16 @@ class AddressBook(UserDict): # Клас для зберігання всіх к�
         today = date.today()
 
         for contact in self.data.values():
-            if contact.birthday: 
-                birthday = contact.birthday.value.replace(year=today.year)
+            birthday_date = self.__string_to_date(contact.birthday.value)
+            birthday = birthday_date.replace(year=today.year)
+            birthday = self.__adjust_for_weekend(birthday)
+            if birthday < today: 
+                birthday = birthday.replace(year=birthday.year + 1)
                 birthday = self.__adjust_for_weekend(birthday)
-                if birthday < today: 
-                    birthday = birthday.replace(year=birthday.year + 1)
-                    birthday = self.__adjust_for_weekend(birthday)
-                delta_days = (birthday - today).days
-                if 0 <= delta_days <= days:    
-                    congratulation_date_str = self.__date_to_string(birthday)
-                    upcoming_birthdays.append({"name": contact.name.value, "congratulation_date": congratulation_date_str})
+            delta_days = (birthday - today).days
+            if 0 <= delta_days <= days:    
+                congratulation_date_str = self.__date_to_string(birthday)
+                upcoming_birthdays.append({"name": contact.name.value, "congratulation_date": congratulation_date_str})
                 
         return upcoming_birthdays
 
