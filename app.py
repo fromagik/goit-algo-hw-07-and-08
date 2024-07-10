@@ -79,14 +79,20 @@ class App:
                 scrollregion=self.canvas.bbox("all")
             )
         )
+        find_label = tk.Label(self.contact_frame, text='Search contact', bg='white', fg='black', font=('Arial', 16), bd=0, highlightthickness=0)
+        find_entry = tk.Entry(self.contact_frame, bg='white', fg='black', bd=0, font=('Arial', 12))
+        find_btn = tk.Button(self.contact_frame, text='Search', bg='white', fg='black', bd=0, highlightthickness=0, width=10, height=2, command=lambda: self.find_contact(find_entry))
+        find_label.grid(row=0, column=0, padx=10, pady=5)
+        find_entry.grid(row=0, column=1, padx=10, pady=5)
+        find_btn.grid(row=0, column=2, padx=10, pady=5)
         # Виводимо всіх доданих контактів
         for index, contact in enumerate(self.book):
             contact_label = tk.Label(self.contact_frame, text=contact.name, bg='white', fg='black', font=('Arial', 16), bd=0, highlightthickness=0)
-            contact_label.grid(row=index, column=0, padx=10, pady=5, sticky='w')
+            contact_label.grid(row=index + 1, column=0, padx=10, pady=5, sticky='w')
             numer_label = tk.Label(self.contact_frame, text=contact.phones, bg='white', fg='black', font=('Arial', 16), bd=0, highlightthickness=0)
-            numer_label.grid(row=index, column=1, padx=10, pady=5, sticky='w')
+            numer_label.grid(row=index + 1, column=1, padx=10, pady=5, sticky='w')
             show_birt_btn = tk.Button(self.contact_frame, text='Show birthday', bg='white', fg='black', bd=0, highlightthickness=0, width=10, height=2, command=lambda: self.show_birthday(contact))
-            show_birt_btn.grid(row=index, column=2, padx=10, pady=5)
+            show_birt_btn.grid(row=index + 1, column=2, padx=10, pady=5)
 
     def add_contact_window(self):
         # Додаткове вікно з полями для вводу імені та номеру телефона
@@ -280,6 +286,25 @@ class App:
         if contact:
             self.book.delete(contact)
             self.main()
+
+    def find_contact(self, numer):
+        # Вікно для знайденого контакту
+        acw = tk.Toplevel(root)
+        acw.title('Find contact')
+        acw.geometry("150x120")
+        acw.minsize(width=150, height=120)
+        acw.maxsize(width=150, height=120)
+        acw.configure(bg='white')
+
+        numer = numer.get()
+        for contact in self.book:
+            found_phone = contact.find_phone(numer)
+        if found_phone:
+            contact_lbl = tk.Label(acw, text=f"{contact.name}:{found_phone}", bg='white', fg='black', font=('Arial', 16), bd=0, highlightthickness=0) 
+        
+        ok_btn = tk.Button(acw, text='OK', command=self.main, width=5, height=2, bd=0, highlightthickness=0)
+        contact_lbl.pack()
+        ok_btn.pack()
 
     def exit_app(self):
         # Функция для выхода из приложения
